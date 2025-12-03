@@ -104,15 +104,18 @@ public:
     }
     virtual Node* insert(Node* cur, int val)
     {
-        if (cur == nullptr) return new Node(val);
-        if (cur->key == val) return cur;
+        if (cur == nullptr) {
+            cur = new Node(val); return cur;}
+        if (cur->key == val) return root;
         else if (cur->key < val)
         {
-            return insert(cur->right, val);
+            if (cur->right == nullptr) { cur->right = new Node(val); return root; }
+            else return insert(cur->right, val);
         }
         else
         {
-            return insert(cur->left, val);
+            if (cur->left == nullptr) { cur->left = new Node(val); return root; }
+            else return insert(cur->left, val);
         }
     }
     virtual Node* deleteNode(Node* start, int val)
