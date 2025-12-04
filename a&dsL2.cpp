@@ -1,18 +1,21 @@
-﻿#include <iostream> 
-#include <queue> 
-#include <random> 
-const char choice_str[146] = "0 - exit, 1 - find, 2 - insert, 3 - delete, 4 - max, 5 - min, 6 - plr, 7 - lpr, 8 - rpl, 9 - levels, 10 - height random, 11 - height increasing: "; 
-enum Color { RED, BLACK }; 
+﻿#include <iostream>
+#include <queue>
+#include <random>
+const char choice_str[146] = "0 - exit, 1 - find, 2 - insert, 3 - delete, 4 - max, 5 - min, 6 - plr, 7 - lpr, 8 - rpl, 9 - levels, 10 - height random, 11 - height increasing: ";
+enum Color { RED, BLACK };
 struct Node {
-int key;
-Node* left;
-Node* right;
-Node* parent;
-int height;
-Color color;
-Node(int v) { key = v, left = nullptr, right = nullptr, parent = nullptr, height = 1, color = RED; } }; class BSTtree {
+	int key;
+	Node* left;
+	Node* right;
+	Node* parent;
+	int height;
+	Color color;
+	Node(int v) { key = v, left = nullptr, right = nullptr, parent = nullptr, height = 1, color = RED; }
+};
+class BSTtree {
 private:
-Node* root; public:
+	Node* root;
+public:
 	BSTtree() : root(nullptr) {}
 	Node* find(Node* start, int v)
 	{
@@ -97,7 +100,6 @@ Node* root; public:
 			}
 			std::cout << nod->key << ", ";
 		}
-		std::cout << "\n";
 	}
 	virtual Node* insert(Node* cur, int val)
 	{
@@ -116,33 +118,37 @@ Node* root; public:
 			else return insert(cur->left, val);
 		}
 	}
-	virtual Node* deleteNode(Node* start, int val)
+	virtual Node* deleteNode(Node* cur, int val)
 	{
-		if (start == nullptr) return start;
-		if (start->key > val)
-			deleteNode(start->left, val);
-		else if (start->key < val)
-			deleteNode(start->right, val);
+		if (cur == nullptr)
+			return cur;
+		if (cur->key > val)
+		{
+			cur->left = deleteNode(cur->left, val);
+		}
+		else if (cur->key < val)
+		{
+			cur->right = deleteNode(cur->right, val);
+		}
 		else
 		{
-			if ((start->left == nullptr) || (start->right == nullptr)) {
-				Node* temp = start->left ? start->left : start->right;
-				if (temp == nullptr) {
-					temp = start;
-					start = nullptr;
-				}
-				else
-					*start = *temp;
-				delete temp;
+			if (cur->left == nullptr)
+			{
+				Node* child = cur->right;
+				delete cur;
+				return child;
 			}
-			else {
-				Node* temp = find(start, min(start->right));
-				start->key = temp->key;
-				start->right = deleteNode(start->right, temp->key);
+			else if (cur->right == nullptr)
+			{
+				Node* child = cur->left;
+				delete cur;
+				return child;
 			}
+			Node* replace = find(cur->right, min(cur->right));
+			cur->key = replace->key;
+			cur->right = deleteNode(cur->right, replace->key);
 		}
-		if (root == nullptr)
-			return root;
+		return cur;
 	}
 	int height(Node* start)
 	{
@@ -157,7 +163,7 @@ Node* root; public:
 	virtual void findroot(int v)
 	{
 		if (find(root, v)) std::cout << "Key found\n";
-		else std::cout << "Key not found";
+		else std::cout << "Key not found\n";
 	}
 	virtual int maxroot()
 	{
@@ -190,148 +196,148 @@ Node* root; public:
 	{
 		level_print(root);
 	}
-	}; class AVLtree : public BSTtree {
-	private:
-		Node* root;
-		int height(Node* N) {
-			if (N == nullptr)
-				return 0;
-			return N->height;
-		}
-		int getBalance(Node* N) {
-			if (N == nullptr)
-				return 0;
-			return height(N->left) - height(N->right);
-		}
-		Node* rightRotate(Node* y) {
-			Node* x = y->left;
-			Node* xr = x->right;
-			x->right = y;
-			y->left = xr;
-			y->height = 1 + std::max(height(y->left), height(y->right));
-			x->height = 1 + std::max(height(x->left), height(x->right));
-			return x;
-		}
-		Node* leftRotate(Node* x) {
-			Node* y = x->right;
-			Node* yl = y->left;
-			y->left = x;
-			x->right = yl;
-			x->height = 1 + std::max(height(x->left), height(x->right));
-			y->height = 1 + std::max(height(y->left), height(y->right));
-			return y;
-		}
-		Node* insert(Node* node, int key) override {
-			if (node == nullptr)
-				return new Node(key);
-			if (key < node->key)
-				node->left = insert(node->left, key);
-			else if (key > node->key)
-				node->right = insert(node->right, key);
-			else
-				return node;
-			node->height = 1 + std::max(height(node->left), height(node->right));
-			int balance = getBalance(node);
-			if (balance > 1 && key < node->left->key)
-				return rightRotate(node);
-			if (balance < -1 && key > node->right->key)
-				return leftRotate(node);
-			if (balance > 1 && key > node->left->key) {
-				node->left = leftRotate(node->left);
-				return rightRotate(node);
-			}
-			if (balance < -1 && key < node->right->key) {
-				node->right = rightRotate(node->right);
-				return leftRotate(node);
-			}
+};
+class AVLtree : public BSTtree {
+private:
+	Node* root;
+	int height(Node* N) {
+		if (N == nullptr)
+			return 0;
+		return N->height;
+	}
+	int getBalance(Node* N) {
+		if (N == nullptr)
+			return 0;
+		return height(N->left) - height(N->right);
+	}
+	Node* rightRotate(Node* y) {
+		Node* x = y->left;
+		Node* xr = x->right;
+		x->right = y;
+		y->left = xr;
+		y->height = 1 + std::max(height(y->left), height(y->right));
+		x->height = 1 + std::max(height(x->left), height(x->right));
+		return x;
+	}
+	Node* leftRotate(Node* x) {
+		Node* y = x->right;
+		Node* yl = y->left;
+		y->left = x;
+		x->right = yl;
+		x->height = 1 + std::max(height(x->left), height(x->right));
+		y->height = 1 + std::max(height(y->left), height(y->right));
+		return y;
+	}
+	Node* insert(Node* node, int key) override {
+		if (node == nullptr)
+			return new Node(key);
+		if (key < node->key)
+			node->left = insert(node->left, key);
+		else if (key > node->key)
+			node->right = insert(node->right, key);
+		else
 			return node;
+		node->height = 1 + std::max(height(node->left), height(node->right));
+		int balance = getBalance(node);
+		if (balance > 1 && key < node->left->key)
+			return rightRotate(node);
+		if (balance < -1 && key > node->right->key)
+			return leftRotate(node);
+		if (balance > 1 && key > node->left->key) {
+			node->left = leftRotate(node->left);
+			return rightRotate(node);
 		}
-		Node* deleteNode(Node* root, int key) override {
-			if (root == nullptr)
-				return root;
-
-			if (key < root->key)
-				root->left = deleteNode(root->left, key);
-			else if (key > root->key)
-				root->right = deleteNode(root->right, key);
-			else {
-				if ((root->left == nullptr) || (root->right == nullptr)) {
-					Node* temp = root->left ? root->left : root->right;
-					if (temp == nullptr) {
-						temp = root;
-						root = nullptr;
-					}
-					else
-						*root = *temp;
-					delete temp;
-				}
-				else {
-					Node* temp = find(root->right, min(root->right));
-					root->key = temp->key;
-					root->right = deleteNode(root->right, temp->key);
-				}
-			}
-			if (root == nullptr)
-				return root;
-			root->height = 1 + std::max(height(root->left), height(root->right));
-			int balance = getBalance(root);
-			if (balance > 1 && getBalance(root->left) >= 0)
-				return rightRotate(root);
-			if (balance > 1 && getBalance(root->left) < 0) {
-				root->left = leftRotate(root->left);
-				return rightRotate(root);
-			}
-			if (balance < -1 && getBalance(root->right) <= 0)
-				return leftRotate(root);
-			if (balance < -1 && getBalance(root->right) > 0) {
-				root->right = rightRotate(root->right);
-				return leftRotate(root);
-			}
+		if (balance < -1 && key < node->right->key) {
+			node->right = rightRotate(node->right);
+			return leftRotate(node);
+		}
+		return node;
+	}
+	Node* deleteNode(Node* root, int key) override {
+		if (root == nullptr)
 			return root;
-		}
 
-	public:
-		AVLtree() : root(nullptr) {}
+		if (key < root->key)
+			root->left = deleteNode(root->left, key);
+		else if (key > root->key)
+			root->right = deleteNode(root->right, key);
+		else {
+			if ((root->left == nullptr) || (root->right == nullptr)) {
+				Node* temp = root->left ? root->left : root->right;
+				if (temp == nullptr) {
+					temp = root;
+					root = nullptr;
+				}
+				else
+					*root = *temp;
+				delete temp;
+			}
+			else {
+				Node* temp = find(root->right, min(root->right));
+				root->key = temp->key;
+				root->right = deleteNode(root->right, temp->key);
+			}
+		}
+		if (root == nullptr)
+			return root;
+		root->height = 1 + std::max(height(root->left), height(root->right));
+		int balance = getBalance(root);
+		if (balance > 1 && getBalance(root->left) >= 0)
+			return rightRotate(root);
+		if (balance > 1 && getBalance(root->left) < 0) {
+			root->left = leftRotate(root->left);
+			return rightRotate(root);
+		}
+		if (balance < -1 && getBalance(root->right) <= 0)
+			return leftRotate(root);
+		if (balance < -1 && getBalance(root->right) > 0) {
+			root->right = rightRotate(root->right);
+			return leftRotate(root);
+		}
+		return root;
+	}
+public:
+	AVLtree() : root(nullptr) {}
 
-		int heightroot() override
-		{
-			return height(root);
-		}
-		void findroot(int v) override
-		{
-			if (find(root, v)) std::cout << "Key found\n";
-			else std::cout << "Key not found";
-		}
-		int maxroot() override
-		{
-			return max(root);
-		}
-		int minroot() override
-		{
-			return min(root);
-		}
-		void insertroot(int key) override {
-			root = insert(root, key);
-		}
-		void deleteNoderoot(int key) override {
-			root = deleteNode(root, key);
-		}
-		void plrroot() override
-		{
-			plr(root);
-		}
-		void lprroot() override
-		{
-			lpr(root);
-		}
-		void rplroot() override
-		{
-			rpl(root);
-		}
-		void level_printroot() override
-		{
-			level_print(root);
-		}
+	int heightroot() override
+	{
+		return height(root);
+	}
+	void findroot(int v) override
+	{
+		if (find(root, v)) std::cout << "Key found\n";
+		else std::cout << "Key not found\n";
+	}
+	int maxroot() override
+	{
+		return max(root);
+	}
+	int minroot() override
+	{
+		return min(root);
+	}
+	void insertroot(int key) override {
+		root = insert(root, key);
+	}
+	void deleteNoderoot(int key) override {
+		root = deleteNode(root, key);
+	}
+	void plrroot() override
+	{
+		plr(root);
+	}
+	void lprroot() override
+	{
+		lpr(root);
+	}
+	void rplroot() override
+	{
+		rpl(root);
+	}
+	void level_printroot() override
+	{
+		level_print(root);
+	}
 };
 
 class RBtree : public BSTtree {
@@ -502,119 +508,122 @@ private:
 			u->parent->right = v;
 		if (v != nullptr)
 			v->parent = u->parent;
-	} public:
-		RBtree() : root(nullptr) {}
+	}
+public:
+	RBtree() : root(nullptr) {}
 
-		int heightroot() override
-		{
-			return height(root);
-		}
-		void findroot(int v) override
-		{
-			if (find(root, v)) std::cout << "Key found\n";
-			else std::cout << "Key not found";
-		}
-		int maxroot() override
-		{
-			return max(root);
-		}
-		int minroot() override
-		{
-			return min(root);
-		}
-		void insertroot(int key) override
-		{
-			Node* node = new Node(key);
-			Node* parent = nullptr;
-			Node* current = root;
-			while (current != nullptr) {
-				parent = current;
-				if (node->key < current->key)
-					current = current->left;
-				else
-					current = current->right;
-			}
-			node->parent = parent;
-			if (parent == nullptr)
-				root = node;
-			else if (node->key < parent->key)
-				parent->left = node;
+	int heightroot() override
+	{
+		return height(root);
+	}
+	void findroot(int v) override
+	{
+		if (find(root, v)) std::cout << "Key found\n";
+		else std::cout << "Key not found\n";
+	}
+	int maxroot() override
+	{
+		return max(root);
+	}
+	int minroot() override
+	{
+		return min(root);
+	}
+	void insertroot(int key) override
+	{
+		Node* node = new Node(key);
+		Node* parent = nullptr;
+		Node* current = root;
+		while (current != nullptr) {
+			parent = current;
+			if (node->key < current->key)
+				current = current->left;
 			else
-				parent->right = node;
-			fixInsert(node);
+				current = current->right;
 		}
-		void deleteNoderoot(int key) override
-		{
-			Node* node = root;
-			Node* z = nullptr;
-			Node* x = nullptr;
-			Node* y = nullptr;
-			while (node != nullptr) {
-				if (node->key == key) {
-					z = node;
-				}
+		node->parent = parent;
+		if (parent == nullptr)
+			root = node;
+		else if (node->key < parent->key)
+			parent->left = node;
+		else
+			parent->right = node;
+		fixInsert(node);
+	}
+	void deleteNoderoot(int key) override
+	{
+		Node* node = root;
+		Node* z = nullptr;
+		Node* x = nullptr;
+		Node* y = nullptr;
+		while (node != nullptr) {
+			if (node->key == key) {
+				z = node;
+			}
 
-				if (node->key <= key) {
-					node = node->right;
-				}
-				else {
-					node = node->left;
-				}
-			}
-			if (z == nullptr) {
-				std::cout << "Key not found in the tree" << std::endl;
-				return;
-			}
-			y = z;
-			Color yOriginalColor = y->color;
-			if (z->left == nullptr) {
-				x = z->right;
-				transplant(root, z, z->right);
-			}
-			else if (z->right == nullptr) {
-				x = z->left;
-				transplant(root, z, z->left);
+			if (node->key <= key) {
+				node = node->right;
 			}
 			else {
-				y = find(z->right, min(z->right));
-				yOriginalColor = y->color;
-				x = y->right;
-				if (y->parent == z) {
-					if (x != nullptr)
-						x->parent = y;
-				}
-				else {
-					transplant(root, y, y->right);
-					y->right = z->right;
-					y->right->parent = y;
-				}
-				transplant(root, z, y);
-				y->left = z->left;
-				y->left->parent = y;
-				y->color = z->color;
-			}
-			delete z;
-			if (yOriginalColor == BLACK) {
-				fixDelete(x);
+				node = node->left;
 			}
 		}
-		void plrroot() override
-		{
-			plr(root, 'r');
+		if (z == nullptr) {
+			std::cout << "Key not found in the tree" << std::endl;
+			return;
 		}
-		void lprroot() override
-		{
-			lpr(root, 'r');
+		y = z;
+		Color yOriginalColor = y->color;
+		if (z->left == nullptr) {
+			x = z->right;
+			transplant(root, z, z->right);
 		}
-		void rplroot() override
-		{
-			rpl(root, 'r');
+		else if (z->right == nullptr) {
+			x = z->left;
+			transplant(root, z, z->left);
 		}
-		void level_printroot() override
-		{
-			level_print(root, 'r');
+		else {
+			y = find(z->right, min(z->right));
+			yOriginalColor = y->color;
+			x = y->right;
+			if (y->parent == z) {
+				if (x != nullptr)
+					x->parent = y;
+			}
+			else {
+				transplant(root, y, y->right);
+				y->right = z->right;
+				y->right->parent = y;
+			}
+			transplant(root, z, y);
+			y->left = z->left;
+			y->left->parent = y;
+			y->color = z->color;
 		}
-}; void checkTreeHeightInRandomBST(BSTtree* tree) {
+		delete z;
+		if (yOriginalColor == BLACK) {
+			fixDelete(x);
+		}
+	}
+	void plrroot() override
+	{
+		plr(root, 'r');
+	}
+	void lprroot() override
+	{
+		lpr(root, 'r');
+	}
+	void rplroot() override
+	{
+		rpl(root, 'r');
+	}
+	void level_printroot() override
+	{
+		level_print(root, 'r');
+	}
+};
+void checkTreeHeightInRandomBST(BSTtree* tree)
+{
 	int k;
 	std::random_device dev;
 	std::mt19937 range(dev());
@@ -629,7 +638,9 @@ private:
 			std::cout << count << " " << (*tree).heightroot() << "\n";
 		}
 	}
-} void checkTreeHeightInIncreasingBST(BSTtree* tree) {
+}
+void checkTreeHeightInIncreasingBST(BSTtree* tree)
+{
 	int k = 1;
 	std::cout << "Increasing keys:\n";
 	for (int count = 1; count <= 20000; count++, k++)
@@ -640,7 +651,9 @@ private:
 			std::cout << count << " " << (*tree).heightroot() << "\n";
 		}
 	}
-} void checkTreeHeightInRandomAVL(AVLtree* tree) {
+}
+void checkTreeHeightInRandomAVL(AVLtree* tree)
+{
 	int k;
 	std::random_device dev;
 	std::mt19937 range(dev());
@@ -655,7 +668,9 @@ private:
 			std::cout << count << " " << (*tree).heightroot() << "\n";
 		}
 	}
-} void checkTreeHeightInIncreasingAVL(AVLtree* tree) {
+}
+void checkTreeHeightInIncreasingAVL(AVLtree* tree)
+{
 	int k = 1;
 	std::cout << "Increasing keys:\n";
 	for (int count = 1; count <= 20000; count++, k++)
@@ -666,7 +681,9 @@ private:
 			std::cout << count << " " << (*tree).heightroot() << "\n";
 		}
 	}
-} void checkTreeHeightInRandomRB(RBtree* tree) {
+}
+void checkTreeHeightInRandomRB(RBtree* tree)
+{
 	int k;
 	std::random_device dev;
 	std::mt19937 range(dev());
@@ -681,7 +698,9 @@ private:
 			std::cout << count << " " << (*tree).heightroot() << "\n";
 		}
 	}
-} void checkTreeHeightInIncreasingRB(RBtree* tree) {
+}
+void checkTreeHeightInIncreasingRB(RBtree* tree)
+{
 	int k = 1;
 	std::cout << "Increasing keys:\n";
 	for (int count = 1; count <= 20000; count++, k++)
@@ -694,7 +713,8 @@ private:
 	}
 }
 
-int main() {
+int main()
+{
 	BSTtree bst;
 	AVLtree avl;
 	RBtree rb;
